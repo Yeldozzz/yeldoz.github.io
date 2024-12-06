@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<animeList>
+    <entry>
+        <title>Naruto</title>
+        <genre>Action</genre>
+        <year>2002</year>
+        <rating>8.6</rating>
+    </entry>
+    <entry>
+        <title>One Piece</title>
+        <genre>Adventure</genre>
+        <year>1999</year>
+        <rating>9.2</rating>
+    </entry>
+    <entry>
+        <title>Attack on Titan</title>
+        <genre>Action</genre>
+        <year>2013</year>
+        <rating>9.1</rating>
+    </entry>
+    <entry>
+        <title>Death Note</title>
+        <genre>Thriller</genre>
+        <year>2006</year>
+        <rating>9.0</rating>
+    </entry>
+    <entry>
+        <title>Dragon Ball Z</title>
+        <genre>Action</genre>
+        <year>1989</year>
+        <rating>8.7</rating>
+    </entry>
+    <entry>
+        <title>My Hero Academia</title>
+        <genre>Superhero</genre>
+        <year>2016</year>
+        <rating>8.4</rating>
+    </entry>
+</animeList>
