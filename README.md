@@ -1,186 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime List</title>
+    <title>Аниме и Манга</title>
+  
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+   
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
         }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin: 10px 5px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
         table {
             width: 100%;
-            margin: 20px 0;
             border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
-
         th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
         }
-
         th {
-            background-color: #4CAF50;
-            color: white;
-            text-transform: uppercase;
+            background-color: #f4f4f4;
         }
-
-        tr:hover {
-            background-color: #f1f1f1;
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
         }
-
-        td {
-            color: #555;
-        }
-
-        td:nth-child(4) {
-            text-align: center;
-        }
-
-        .button-container {
-            text-align: center;
-        }
-
-        ul {
-            margin: 20px 0;
-            padding: 0;
-            list-style-type: disc;
-            color: #555;
-        }
-
-        ul li {
-            margin: 5px 0;
-            padding: 5px;
-            background-color: #fff;
-            border-left: 4px solid #4CAF50;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+     
+        #dialog {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Anime List</h1>
+    <div id="animeApp">
+        <h1>Список Аниме и Манги</h1>
 
-    <div class="button-container">
-        <button onclick="sortTable()">Sort by Year</button>
-        <button onclick="filterTable()">Filter by Rating > 8.5</button>
+        <div>
+            <button @click="addAnimeWithPrompt">Добавить новое аниме</button>
+            <button @click="removeAnime">Удалить последнее аниме</button>
+            <button @click="restoreAnime">Восстановить последнее удаленное</button>
+            <button id="toggleList">Показать/Скрыть таблицу</button>
+    
+            <button id="showDialog" @click="openDialog">Показать информацию</button>
+        </div>
+
+        <table v-if="animeList.length > 0">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Название</th>
+                    <th>Жанр</th>
+                    <th>Рейтинг</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(anime, index) in animeList" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ anime.title }}</td>
+                    <td>{{ anime.genre }}</td>
+                    <td>{{ anime.rating }}</td>
+                    <td><button @click="selectAnime(anime)">Выбрать</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <p v-else>Список пуст</p>
+
+        <div v-if="selectedAnime" id="dialog" title="Информация о аниме">
+            <p><strong>Название:</strong> {{ selectedAnime.title }}</p>
+            <p><strong>Жанр:</strong> {{ selectedAnime.genre }}</p>
+            <p><strong>Рейтинг:</strong> {{ selectedAnime.rating }}</p>
+        </div>
+
+        <button id="dlyaCSS">Изменить стили и контент</button>
     </div>
 
-    <table id="animeTable">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Genre</th>
-                <th>Year</th>
-                <th>Rating</th>
-            </tr>
-        </thead>
-        <tbody>
-   
-        </tbody>
-    </table>
-
-    <h2>Список аниме листа</h2>
-    <ul id="animeList">
-   
-    </ul>
-
     <script>
-        function loadXML() {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", "anime.xml", true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    const xml = xhr.responseXML;
-                    displayData(xml);
-                    populateList(xml);
+        
+        const app = new Vue({
+            el: '#animeApp',
+            data: {
+                animeList: [
+                    { title: 'Naruto', genre: 'Shounen', rating: 8.2 },
+                    { title: 'Attack on Titan', genre: 'Action', rating: 9.1 },
+                    { title: 'One Piece', genre: 'Adventure', rating: 8.8 },
+                    { title: 'Death Note', genre: 'Thriller', rating: 9.0 },
+                    { title: 'My Hero Academia', genre: 'Superhero', rating: 8.4 },
+                    { title: 'Tokyo Ghoul', genre: 'Horror', rating: 7.9 },
+                    { title: 'Sword Art Online', genre: 'Fantasy', rating: 7.5 },
+                    { title: 'Fullmetal Alchemist', genre: 'Fantasy', rating: 9.2 }
+                ],
+                removedList: [], 
+                newAnime: { title: '', genre: '', rating: '' }, 
+                selectedAnime: null
+            },
+            methods: {
+                addAnimeWithPrompt() {
+                  const title = prompt("Введите название аниме:");
+                  if (!title) return alert("Название не может быть пустым!");
+                  const genre = prompt("Введите жанр аниме:");
+                  if (!genre) return alert("Жанр не может быть пустым!");
+                  const rating = parseFloat(prompt("Введите рейтинг аниме (от 0 до 10):"));
+                  if (isNaN(rating) || rating < 0 || rating > 10) {
+                      return alert("Рейтинг должен быть числом от 0 до 10!");
+                  }
+                  this.animeList.push({ title, genre, rating });
+                  alert("Новое аниме успешно добавлено!");
+                },
+                removeAnime() {
+                    if (this.animeList.length > 0) {
+                        const removed = this.animeList.pop();
+                        this.removedList.push(removed);
+                        alert(`Удалено: ${removed.title}`);
+                    } else {
+                        alert('Список пуст!');
+                    }
+                },
+                restoreAnime() {
+                    if (this.removedList.length > 0) {
+                        const restored = this.removedList.pop();
+                        this.animeList.push(restored);
+                        alert(`Восстановлено: ${restored.title}`);
+                    } else {
+                        alert('Нет удаленных элементов для восстановления.');
+                    }
+                },
+                addCustomAnime() {
+                    if (this.newAnime.title && this.newAnime.genre && this.newAnime.rating) {
+                        this.animeList.push({ ...this.newAnime });
+                        this.newAnime = { title: '', genre: '', rating: '' };
+                    } else {
+                        alert('Пожалуйста, заполните все поля.');
+                    }
+                },
+                selectAnime(anime) {
+                    this.selectedAnime = anime;
+                },
+                openDialog() {
+                    if (this.selectedAnime) {
+                        $('#dialog').dialog({
+                            modal: true,
+                            buttons: {
+                                "Закрыть": function() {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    } else {
+                        alert("Выберите аниме для отображения информации.");
+                    }
                 }
-            };
-            xhr.send();
-        }
+            }
+        });
 
-        function displayData(xml) {
-            const table = document.getElementById('animeTable').getElementsByTagName('tbody')[0];
-            const entries = xml.getElementsByTagName('entry');
+        $(document).ready(function () {
+            $('#toggleList').click(function () {
+                $('table').fadeToggle();
+            });
+
+            $('#dlyaCSS').click(function() {
+          
+                $('table').css({
+                    'background-color': 'grey',
+                    'border': '2px solid #ccc',
+                });
+
+                $('h1').text('Список Аниме и Манги - Обновленный');
+
+                $('button').css({
+                    'background-color': 'green',
+                    'color': 'white',
+                    'font-weight': 'bold'
+                });
+
+                $('#animeApp').append('<p style="color: white;">Все изменения успешно применены!</p>');
+            });
+
+            $('#toggleList').bind('click', function() {
+                alert('Таблица будет показана или скрыта!');
+            });
+
             
-            for (let i = 0; i < entries.length; i++) {
-                const entry = entries[i];
-                const title = entry.getElementsByTagName('title')[0].textContent;
-                const genre = entry.getElementsByTagName('genre')[0].textContent;
-                const year = entry.getElementsByTagName('year')[0].textContent;
-                const rating = entry.getElementsByTagName('rating')[0].textContent;
-
-                const row = table.insertRow();
-                row.insertCell(0).textContent = title;
-                row.insertCell(1).textContent = genre;
-                row.insertCell(2).textContent = year;
-                row.insertCell(3).textContent = rating;
-            }
-        }
-
-        function populateList(xml) {
-            const list = document.getElementById('animeList');
-            const entries = xml.getElementsByTagName('entry');
-
-            for (let i = 0; i < entries.length; i++) {
-                const title = entries[i].getElementsByTagName('title')[0].textContent;
-                const listItem = document.createElement('li');
-                listItem.textContent = title;
-                list.appendChild(listItem);
-            }
-        }
-
-        function sortTable() {
-            const table = document.getElementById('animeTable');
-            const rows = Array.from(table.rows).slice(1);
-            rows.sort((rowA, rowB) => {
-                const yearA = parseInt(rowA.cells[2].textContent);
-                const yearB = parseInt(rowB.cells[2].textContent);
-                return yearA - yearB;
-            });
-            rows.forEach(row => table.appendChild(row));
-        }
-
-        function filterTable() {
-            const table = document.getElementById('animeTable');
-            const rows = Array.from(table.rows).slice(1);
-            rows.forEach(row => {
-                const rating = parseFloat(row.cells[3].textContent);
-                if (rating <= 8.5) {
-                    row.style.display = 'none';
-                } else {
-                    row.style.display = '';
-                }
-            });
-        }
-
-        window.onload = loadXML;
+        });
+        
     </script>
 </body>
 </html>
