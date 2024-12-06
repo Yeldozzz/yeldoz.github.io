@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Аниме и Манга</title>
-  
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-   
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
         }
         table {
             width: 100%;
@@ -28,14 +30,18 @@
         th {
             background-color: #f4f4f4;
         }
-        button {
-            margin: 5px;
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-     
         #dialog {
             display: none;
+            border: 2px solid black;
+            padding: 10px;
+            background-color: white;
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            width: 40%;
+        }
+        #dialog p {
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -44,153 +50,124 @@
         <h1>Список Аниме и Манги</h1>
 
         <div>
-            <button @click="addAnimeWithPrompt">Добавить новое аниме</button>
-            <button @click="removeAnime">Удалить последнее аниме</button>
-            <button @click="restoreAnime">Восстановить последнее удаленное</button>
-            <button id="toggleList">Показать/Скрыть таблицу</button>
-    
-            <button id="showDialog" @click="openDialog">Показать информацию</button>
+            <button onclick="addAnimeWithPrompt()">Добавить новое аниме</button>
+            <button onclick="removeAnime()">Удалить последнее аниме</button>
+            <button onclick="restoreAnime()">Восстановить последнее удаленное</button>
+            <button onclick="toggleTable()">Показать/Скрыть таблицу</button>
+            <button onclick="openDialog()">Показать информацию</button>
         </div>
 
-        <table v-if="animeList.length > 0">
+        <table id="animeTable">
             <thead>
                 <tr>
                     <th>№</th>
                     <th>Название</th>
                     <th>Жанр</th>
                     <th>Рейтинг</th>
-                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(anime, index) in animeList" :key="index">
-                    <td>{{ index + 1 }}</td>
-                    <td>{{ anime.title }}</td>
-                    <td>{{ anime.genre }}</td>
-                    <td>{{ anime.rating }}</td>
-                    <td><button @click="selectAnime(anime)">Выбрать</button></td>
-                </tr>
+                <!-- Таблица заполняется через JavaScript -->
             </tbody>
         </table>
-        <p v-else>Список пуст</p>
+        <p id="emptyMessage" style="text-align: center; display: none;">Список пуст</p>
 
-        <div v-if="selectedAnime" id="dialog" title="Информация о аниме">
-            <p><strong>Название:</strong> {{ selectedAnime.title }}</p>
-            <p><strong>Жанр:</strong> {{ selectedAnime.genre }}</p>
-            <p><strong>Рейтинг:</strong> {{ selectedAnime.rating }}</p>
+        <div id="dialog">
+            <p><strong>Название:</strong> <span id="dialogTitle"></span></p>
+            <p><strong>Жанр:</strong> <span id="dialogGenre"></span></p>
+            <p><strong>Рейтинг:</strong> <span id="dialogRating"></span></p>
+            <button onclick="closeDialog()">Закрыть</button>
         </div>
-
-        <button id="dlyaCSS">Изменить стили и контент</button>
     </div>
 
     <script>
-        
-        const app = new Vue({
-            el: '#animeApp',
-            data: {
-                animeList: [
-                    { title: 'Naruto', genre: 'Shounen', rating: 8.2 },
-                    { title: 'Attack on Titan', genre: 'Action', rating: 9.1 },
-                    { title: 'One Piece', genre: 'Adventure', rating: 8.8 },
-                    { title: 'Death Note', genre: 'Thriller', rating: 9.0 },
-                    { title: 'My Hero Academia', genre: 'Superhero', rating: 8.4 },
-                    { title: 'Tokyo Ghoul', genre: 'Horror', rating: 7.9 },
-                    { title: 'Sword Art Online', genre: 'Fantasy', rating: 7.5 },
-                    { title: 'Fullmetal Alchemist', genre: 'Fantasy', rating: 9.2 }
-                ],
-                removedList: [], 
-                newAnime: { title: '', genre: '', rating: '' }, 
-                selectedAnime: null
-            },
-            methods: {
-                addAnimeWithPrompt() {
-                  const title = prompt("Введите название аниме:");
-                  if (!title) return alert("Название не может быть пустым!");
-                  const genre = prompt("Введите жанр аниме:");
-                  if (!genre) return alert("Жанр не может быть пустым!");
-                  const rating = parseFloat(prompt("Введите рейтинг аниме (от 0 до 10):"));
-                  if (isNaN(rating) || rating < 0 || rating > 10) {
-                      return alert("Рейтинг должен быть числом от 0 до 10!");
-                  }
-                  this.animeList.push({ title, genre, rating });
-                  alert("Новое аниме успешно добавлено!");
-                },
-                removeAnime() {
-                    if (this.animeList.length > 0) {
-                        const removed = this.animeList.pop();
-                        this.removedList.push(removed);
-                        alert(`Удалено: ${removed.title}`);
-                    } else {
-                        alert('Список пуст!');
-                    }
-                },
-                restoreAnime() {
-                    if (this.removedList.length > 0) {
-                        const restored = this.removedList.pop();
-                        this.animeList.push(restored);
-                        alert(`Восстановлено: ${restored.title}`);
-                    } else {
-                        alert('Нет удаленных элементов для восстановления.');
-                    }
-                },
-                addCustomAnime() {
-                    if (this.newAnime.title && this.newAnime.genre && this.newAnime.rating) {
-                        this.animeList.push({ ...this.newAnime });
-                        this.newAnime = { title: '', genre: '', rating: '' };
-                    } else {
-                        alert('Пожалуйста, заполните все поля.');
-                    }
-                },
-                selectAnime(anime) {
-                    this.selectedAnime = anime;
-                },
-                openDialog() {
-                    if (this.selectedAnime) {
-                        $('#dialog').dialog({
-                            modal: true,
-                            buttons: {
-                                "Закрыть": function() {
-                                    $(this).dialog("close");
-                                }
-                            }
-                        });
-                    } else {
-                        alert("Выберите аниме для отображения информации.");
-                    }
-                }
+        const animeList = [
+            { title: 'Naruto', genre: 'Shounen', rating: 8.2 },
+            { title: 'Attack on Titan', genre: 'Action', rating: 9.1 },
+            { title: 'One Piece', genre: 'Adventure', rating: 8.8 },
+            { title: 'Death Note', genre: 'Thriller', rating: 9.0 }
+        ];
+        let removedList = [];
+        let selectedAnime = null;
+
+        function renderTable() {
+            const tableBody = document.querySelector('#animeTable tbody');
+            tableBody.innerHTML = '';
+            animeList.forEach((anime, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${anime.title}</td>
+                    <td>${anime.genre}</td>
+                    <td>${anime.rating}</td>
+                `;
+                row.onclick = () => selectAnime(anime);
+                tableBody.appendChild(row);
+            });
+            document.getElementById('emptyMessage').style.display = animeList.length > 0 ? 'none' : 'block';
+        }
+
+        function addAnimeWithPrompt() {
+            const title = prompt("Введите название аниме:");
+            if (!title) return alert("Название не может быть пустым!");
+            const genre = prompt("Введите жанр аниме:");
+            if (!genre) return alert("Жанр не может быть пустым!");
+            const rating = parseFloat(prompt("Введите рейтинг аниме (от 0 до 10):"));
+            if (isNaN(rating) || rating < 0 || rating > 10) {
+                return alert("Рейтинг должен быть числом от 0 до 10!");
             }
-        });
+            animeList.push({ title, genre, rating });
+            renderTable();
+            alert("Новое аниме успешно добавлено!");
+        }
 
-        $(document).ready(function () {
-            $('#toggleList').click(function () {
-                $('table').fadeToggle();
-            });
+        function removeAnime() {
+            if (animeList.length > 0) {
+                const removed = animeList.pop();
+                removedList.push(removed);
+                renderTable();
+                alert(`Удалено: ${removed.title}`);
+            } else {
+                alert('Список пуст!');
+            }
+        }
 
-            $('#dlyaCSS').click(function() {
-          
-                $('table').css({
-                    'background-color': 'grey',
-                    'border': '2px solid #ccc',
-                });
+        function restoreAnime() {
+            if (removedList.length > 0) {
+                const restored = removedList.pop();
+                animeList.push(restored);
+                renderTable();
+                alert(`Восстановлено: ${restored.title}`);
+            } else {
+                alert('Нет удаленных элементов для восстановления.');
+            }
+        }
 
-                $('h1').text('Список Аниме и Манги - Обновленный');
+        function toggleTable() {
+            const table = document.getElementById('animeTable');
+            table.style.display = table.style.display === 'none' ? '' : 'none';
+        }
 
-                $('button').css({
-                    'background-color': 'green',
-                    'color': 'white',
-                    'font-weight': 'bold'
-                });
+        function selectAnime(anime) {
+            selectedAnime = anime;
+        }
 
-                $('#animeApp').append('<p style="color: white;">Все изменения успешно применены!</p>');
-            });
+        function openDialog() {
+            if (selectedAnime) {
+                document.getElementById('dialogTitle').textContent = selectedAnime.title;
+                document.getElementById('dialogGenre').textContent = selectedAnime.genre;
+                document.getElementById('dialogRating').textContent = selectedAnime.rating;
+                document.getElementById('dialog').style.display = 'block';
+            } else {
+                alert("Выберите аниме для отображения информации.");
+            }
+        }
 
-            $('#toggleList').bind('click', function() {
-                alert('Таблица будет показана или скрыта!');
-            });
+        function closeDialog() {
+            document.getElementById('dialog').style.display = 'none';
+        }
 
-            
-        });
-        
+        renderTable();
     </script>
 </body>
 </html>
